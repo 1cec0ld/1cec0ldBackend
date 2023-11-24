@@ -9,11 +9,6 @@ const config = {
   port: 3000,
   host: '0.0.0.0',
 };
-const certificates = {
-  cert:fs.readFileSync('./dev_rxight_web_certs/localhost.cer'), 
-  ca:fs.readFileSync('./dev_rxight_web_certs/ca.crt'), 
-  key:fs.readFileSync('./dev_rxight_web_certs/localhost.key')
-}
 
 const app = express();
 
@@ -26,9 +21,22 @@ app.get('/', (req, res) => {
   console.log(process.env)
 });
 
-const httpsServer = https.createServer(certificates, app);
-httpsServer.listen(config.port, config.host, (err)=> {
-  if(err) {
-    throw new Error('Internal Server Error');
+if(process.env.NODE_ENV=='development'){
+  const certificates = {
+    cert:fs.readFileSync('./dev_rxight_web_certs/localhost.cer'), 
+    ca:fs.readFileSync('./dev_rxight_web_certs/ca.crt'), 
+    key:fs.readFileSync('./dev_rxight_web_certs/localhost.key')
   }
-});
+  const httpsServer = https.createServer(certificates, app);
+  httpsServer.listen(config.port, config.host, (err)=> {
+    if(err) {
+      throw new Error('Internal Server Error');
+    }
+  });
+} else {
+  app.listen(config.port, config.host, (err)=> {
+    if(err) {
+      throw new Error('Internal Server Error');
+    }
+  });
+}
