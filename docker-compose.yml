@@ -1,0 +1,18 @@
+version: '3'
+services:
+  api:
+    image: ereq-server
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    networks:
+      - backend
+    ports:
+      - "3020:3000"
+    volumes:
+      - ./:/usr/src/app
+    env_file: .env
+
+networks:
+  backend:
+    driver: bridge

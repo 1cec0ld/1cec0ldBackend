@@ -1,0 +1,8 @@
+**/node_modules/
+**/dev_rxight_web_certs/
+**/dist
+.git
+npm-debug.log
+.coverage
+.coverage.*
+.aws
