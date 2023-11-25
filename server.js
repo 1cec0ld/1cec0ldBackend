@@ -1,6 +1,5 @@
 const fs = require ('fs');
 const express = require('express');
-const https = require('https');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
@@ -16,12 +15,13 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.get('/', (req, res) => {
-  res.status(200).send('hello world');
+  res.status(200).send('hello '+process.env.NODE_ENV);
   console.log("get: ",200);
   console.log(process.env)
 });
 
 if(process.env.NODE_ENV=='development'){
+  const https = require('https');
   const certificates = {
     cert:fs.readFileSync('./dev_rxight_web_certs/localhost.cer'), 
     ca:fs.readFileSync('./dev_rxight_web_certs/ca.crt'), 
