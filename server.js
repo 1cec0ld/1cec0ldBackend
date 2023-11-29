@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
   res.status(200).send('hello '+process.env.NODE_ENV);
   console.log("get: ",200);
   console.log(process.env)
+  console.log(req.headers)
 });
 
 if(process.env.NODE_ENV=='development'){
