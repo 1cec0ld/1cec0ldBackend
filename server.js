@@ -15,6 +15,11 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.get('/', (req, res) => {
+  if(req.headers['user-agent'] == 'ELB-HealthChecker/2.0'){
+    console.log('LoadBalancer HealthCheck')
+    return res.status(200).send('');
+  }
+  res.set('Content-Type','text/json')
   res.status(200).send('hello '+process.env.NODE_ENV);
   console.log("get: ",200);
   console.log(process.env)
