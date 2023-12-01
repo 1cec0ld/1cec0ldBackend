@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Medication {
+  id                Int           @id @default(autoincrement())
+  lisMedCode        String        @db.VarChar(32)
+  description       String        @db.VarChar(2048)
+  testable          Boolean       @default(false)
+  active            Boolean
+  analyteId         Int?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  analyte           Analyte?      @relation(fields: [analyteId], references: [id])
+}
+model Analyte {
+  id                Int           @id @default(autoincrement())
+  name              String        @unique @db.VarChar(32)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  medications       Medication[]
+}
+model DiagnosisCode {
+  id                Int           @id @default(autoincrement())
+  diagnosisCode     String        @db.VarChar(32)
+  description       String        @db.VarChar(2048)
+}
+model Provider {
+  id                Int           @id @default(autoincrement())
+  npi               String        @db.VarChar(32) @unique
+  fullName          String        @db.VarChar(512)
+  firstName         String        @db.VarChar(128)
+  lastName          String        @db.VarChar(128)
+  title             String        @db.VarChar(128)
+  signatureBlob     Bytes         @db.Blob
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+model Address {
+  id                Int           @id @default(autoincrement())
+  address1          String        @db.VarChar(128)
+  address2          String?       @db.VarChar(128)
+  city              String        @db.VarChar(64)
+  state             String        @db.VarChar(128)
+  zip               String        @db.VarChar(32)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  insuranceCompany  InsuranceCompany[]
+}
+model Rule {
+  id              Int           @id @default(autoincrement())
+  name            String        @db.VarChar(128)
+  description     String        @db.VarChar(2048)
+  internalComment String?       @db.VarChar(2048)
+  externalComment String?       @db.VarChar(2048)
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+model InsuranceCompany {
+  id              Int           @id @default(autoincrement())
+  name            String        @db.VarChar(128)
+  addressId       Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  address         Address      @relation(fields: [addressId], references: [id])
+}

@@ -1,44 +1,52 @@
-const fs = require ('fs');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import { readFileSync } from 'fs';
+import express from 'express';
+import bodyparser from 'body-parser';
+import cors from 'cors';
+import Routes from './config/Routes.js';
+import Errors from './util/Errors.js';
 
 const config = {
   name: 'ereq-server',
   port: 3000,
   host: '0.0.0.0',
 };
-
+//initialize the API app
 const app = express();
+//custom method to prefix 'api/v1' to all version 1 routes
+app.v1 = (method, route, handler) => {
+  if(['get','post','put','delete'].includes(method)) { app[method]('/api/v1'+route,handler) }
+  else {
+    Errors(`server.js:14, method not supported: ${method}`)
+  }
+}
 
-app.use(bodyParser.json());
+//initialize preprocessors (middleware)
+app.use(bodyparser.json());
 app.use(cors());
 
-app.get('/', (req, res) => {
-  if(req.headers['user-agent'] == 'ELB-HealthChecker/2.0'){
-    console.log('LoadBalancer HealthCheck')
-    return res.status(200).send('');
-  }
-  res.set('Content-Type','text/json')
-  res.status(200).send('hello '+process.env.NODE_ENV);
-  console.log("get: ",200);
-  console.log(process.env)
-  console.log(req.headers)
-});
+//initialize routes
+Routes.initialize(app)
 
-if(process.env.NODE_ENV=='development'){
-  const https = require('https');
-  const certificates = {
-    cert:fs.readFileSync('./dev_rxight_web_certs/localhost.cer'), 
-    ca:fs.readFileSync('./dev_rxight_web_certs/ca.crt'), 
-    key:fs.readFileSync('./dev_rxight_web_certs/localhost.key')
-  }
-  const httpsServer = https.createServer(certificates, app);
-  httpsServer.listen(config.port, config.host, (err)=> {
-    if(err) {
-      throw new Error('Internal Server Error');
-    }
-  });
+//start listening for requests
+if(process.env.NODE_ENV == 'development'){
+  import('https')
+    .then((https) => {
+      const certificates = {
+        cert:readFileSync(process.env.LOCALHOST_CERT), 
+        ca:readFileSync(process.env.LOCALHOST_CERT_AUTHORITY), 
+        key:readFileSync(process.env.LOCALHOST_CERT_KEY)
+      }
+      const httpsServer = https.createServer(certificates, app);
+      httpsServer.listen(config.port, config.host, (err)=> {
+        if(err) {
+          throw new Error('Internal Server Error');
+        }
+      });
+    })
+    .catch(err => {
+      console.error("HTTPS Module import failure:")
+      console.error(err)
+    })
 } else {
   app.listen(config.port, config.host, (err)=> {
     if(err) {
