@@ -1,5 +1,5 @@
 import axios from 'axios'
-//Using axios because most recent version of npm-postmark depends on vulnerable axios packages.
+//Using axios because most recent version of npm's postmark depends on vulnerable axios packages.
 //Why not cut out the middle man?
 
 const headerObject = {

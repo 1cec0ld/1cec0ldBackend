@@ -1,0 +1,9 @@
+{
+  "name": "ereq-server",
+  "description": "ereq API",
+  "scripts": {
+    "dokku": {
+      "postdeploy": "npx prisma migrate deploy"
+    }
+  }
+}

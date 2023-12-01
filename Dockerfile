@@ -5,7 +5,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 COPY . .
-
+RUN npm install -g npm@latest
 RUN npm install --omit=dev
 
 EXPOSE 3000
