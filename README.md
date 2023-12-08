@@ -20,7 +20,7 @@
 - Commit and push the changes to the git repository
 - Deploy the changes to the ereq-server
   - `git push dokku master`
-  - This will run the postdeploy script in the package.json file which will run the prisma migrate command on the remote database
+  - This will run the postdeploy script in the app.json file which will run the `prisma migrate deploy` command on the remote database
 - Check the remote database using MySQL Workbench to ensure that migrations applied and no key data was lost
 
 # Deployment
@@ -28,6 +28,8 @@
 - The setup process must be completed before deployment can occur.
 - You must have been authorized to deploy applications to the ereq-server.
 - You must have your SSH key for application deployment in your .ssh folder
+## Steps
+
 
 # Setup
 Initialize an AWS EC2 instance with the following settings:
