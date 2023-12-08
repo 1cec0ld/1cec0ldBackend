@@ -146,7 +146,7 @@ model TestCode {
   updatedAt                   DateTime          @updatedAt @default(now())
   sampleType                  String            @db.VarChar(32) @default("UT")
   method                      String            @db.VarChar(32) @default("Confirmation")
-  eiaDetected                 Boolean?          @default(true)
+  //eiaDetected                 Boolean?          @default(true)
   analytes                    Analyte[]
   parentCodes                 TestCode[]        @relation("TestCodeToTestCode")
   childCodes                  TestCode[]        @relation("TestCodeToTestCode")
