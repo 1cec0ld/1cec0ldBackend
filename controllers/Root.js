@@ -7,7 +7,7 @@ const Root = (request, response) => {
     console.log('LoadBalancer HealthCheck '+ new Date().toISOString().replace('T',' ') )
     return response.status(200).send('');
   }
-  response.status(200).send(JSONPretty(process.env));
+  response.status(200).send(JSONPretty(process.env.GIT_REV));
 }
 
 export default Root
