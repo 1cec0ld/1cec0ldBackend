@@ -8,6 +8,7 @@ COPY package*.json ./
 RUN npm install -g npm@latest
 RUN npm install --omit=dev
 COPY . .
+RUN npx prisma generate
 
 EXPOSE 3000
 

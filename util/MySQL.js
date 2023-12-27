@@ -1,4 +1,4 @@
-import mysql from 'mysql2'
+/*import mysql from 'mysql2'
 
 const sql_config = {
   host: process.env.DATABASE_HOST,
@@ -14,4 +14,4 @@ sql_connection.connect((err) => {
 });
 
 
-export default sql_connection
+export default sql_connection*/
