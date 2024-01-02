@@ -6,8 +6,7 @@ import Sql from "../controllers/debug/Sql.js"
 import Subparam from "../controllers/debug/Subparam.js"
 import Prisma from "../controllers/debug/Prisma.js"
 import Populate from "../controllers/debug/Populate.js"
-import Insurances from "../controllers/master/Insurances.js"
-import Tests from "../controllers/master/Tests.js"
+import User from "../controllers/user/User.js"
 
 const Routes = {
   initialize: (expressApp) => {
@@ -23,9 +22,8 @@ const Routes = {
     expressApp.v1('get', '/d/sql', Sql)
     expressApp.v1('get', '/d/subparam/:q', Subparam)
     ///m/aster lookups
-    expressApp.v1('get', '/m/zipcode/:val',()=>{})
-    expressApp.v1('get', '/m/insurances', Insurances.index)
-    expressApp.v1('get', '/m/tests', Tests.getAll)
+    expressApp.v1('get',  '/u/login', User.blank)
+    expressApp.v1('post', '/u/login', User.login)
     ///a/ccount lookups
     
   }
