@@ -3,7 +3,6 @@ import express from 'express';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import Routes from './config/Routes.js';
-import Errors from './util/Errors.js';
 
 const config = {
   name: 'ereq-server',
@@ -16,7 +15,7 @@ const app = express();
 app.v1 = (method, route, handler) => {
   if(['get','post','put','delete'].includes(method)) { app[method]('/api/v1'+route,handler) }
   else {
-    Errors(`server.js:14, method not supported: ${method}`)
+    console.log(`server.js:14, method not supported: ${method}`)
   }
 }
 
