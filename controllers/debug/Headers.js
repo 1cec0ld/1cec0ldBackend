@@ -8,4 +8,4 @@ const Headers = (req, res)=> {
 }
 
 
-export default Headers
+export default Headers 

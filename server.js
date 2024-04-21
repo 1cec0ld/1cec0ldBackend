@@ -3,6 +3,7 @@ import express from 'express';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import Routes from './config/Routes.js';
+import serveIndex from 'serve-index';
 
 const config = {
   name: 'ereq-server',
@@ -18,10 +19,18 @@ app.v1 = (method, route, handler) => {
     console.log(`server.js:14, method not supported: ${method}`)
   }
 }
+app.use((req, res, next) => {
+  console.log(`Received request: ${req.method} ${req.url}`);
+  next();
+});
 
 //initialize preprocessors (middleware)
 app.use(bodyparser.json());
 app.use(cors());
+
+// Serve static files from the 'public' directory
+app.use('/downloads', express.static('/usr/src/app/storage'), serveIndex('/usr/src/app/storage', { icons: true }));
+
 
 //initialize routes
 Routes.initialize(app)
