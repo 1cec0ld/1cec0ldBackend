@@ -29,7 +29,7 @@ app.use(bodyparser.json());
 app.use(cors());
 
 // Serve static files from the 'public' directory
-app.use('/downloads', express.static('/usr/src/app/storage'), serveIndex('/usr/src/app/storage', { icons: true }));
+app.use('/downloads', express.static('/usr/src/app/storage'), serveIndex('/usr/src/app/storage', { icons: true, view: 'details' }));
 
 
 //initialize routes
