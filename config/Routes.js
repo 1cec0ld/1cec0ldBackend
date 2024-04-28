@@ -13,6 +13,8 @@ const Routes = {
   initialize: (expressApp) => {
     // Serve downloads from the storage directory
     expressApp.use('/downloads', express.static('/usr/src/app/storage/downloads'), serveIndex('/usr/src/app/storage/downloads', { icons: true, view: 'details' }));
+    // Serve downloads from the storage directory
+    expressApp.use('/dance', express.static('/usr/src/app/storage/dance'), serveIndex('/usr/src/app/storage/dance', { icons: true, view: 'details' }));
     
 
 
