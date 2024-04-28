@@ -3,10 +3,9 @@ import express from 'express';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import Routes from './config/Routes.js';
-import serveIndex from 'serve-index';
 
 const config = {
-  name: 'ereq-server',
+  name: '1cec0ld-backend',
   port: 3000,
   host: '0.0.0.0',
 };
@@ -27,10 +26,6 @@ app.use((req, res, next) => {
 //initialize preprocessors (middleware)
 app.use(bodyparser.json());
 app.use(cors());
-
-// Serve static files from the 'public' directory
-app.use('/downloads', express.static('/usr/src/app/storage'), serveIndex('/usr/src/app/storage', { icons: true, view: 'details' }));
-
 
 //initialize routes
 Routes.initialize(app)

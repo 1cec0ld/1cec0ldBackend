@@ -6,10 +6,16 @@ import Subparam from "../controllers/debug/Subparam.js"
 import Prisma from "../controllers/debug/Prisma.js"
 import Populate from "../controllers/debug/Populate.js"
 import User from "../controllers/user/User.js"
-import Downloads from "../controllers/public/Downloads.js"
+import serveIndex from 'serve-index';
+import express from 'express';
 
 const Routes = {
   initialize: (expressApp) => {
+    // Serve downloads from the storage directory
+    expressApp.use('/downloads', express.static('/usr/src/app/storage/downloads'), serveIndex('/usr/src/app/storage/downloads', { icons: true, view: 'details' }));
+    
+
+
     //define routes
     ///root [mostly for AWS Health checks]
     expressApp.get('/', Root);
