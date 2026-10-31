@@ -8,6 +8,7 @@ import Headers from '../controllers/debug/Headers.js';
 import Subparam from '../controllers/debug/Subparam.js';
 import User from '../controllers/user/User.js';
 import McDb from '../controllers/mc/McDb.js';
+import McDbPages from '../controllers/mc/McDbPages.js';
 
 // Repo root, so paths work both in the container (/usr/src/app) and locally.
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -19,8 +20,10 @@ const Routes = {
     expressApp.use('/downloads', express.static(storage('downloads')), serveIndex(storage('downloads'), { icons: true, view: 'details' }));
     expressApp.use('/dance', express.static(storage('dance')), serveIndex(storage('dance'), { icons: true, view: 'details' }));
 
-    // Minecraft DB browser page
-    expressApp.use('/mcdb', express.static(path.join(ROOT, 'public', 'mcdb')));
+    // Minecraft DB browser: server-rendered pages (static is just style.css)
+    expressApp.use('/mcdb', express.static(path.join(ROOT, 'public', 'mcdb'), { index: false, redirect: false }));
+    expressApp.get('/mcdb', McDbPages.index);
+    expressApp.get('/mcdb/:table', McDbPages.table);
 
     ///root [health check]
     expressApp.get('/', Root);

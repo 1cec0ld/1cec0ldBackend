@@ -49,3 +49,45 @@ export const columnsOf = (conn, table) =>
   conn.prepare(`SELECT name, type, pk FROM pragma_table_info(?)`).all(table);
 
 export const quoteIdent = (name) => `"${String(name).replace(/"/g, '""')}"`;
+
+// One page of rows from an allowlisted table, shared by the JSON API and the HTML pages.
+// filters: [[column, value], ...] equality filters; unknown columns are ignored.
+// sort: column name or null (null = newest first by rowid). Returns null for an unknown table.
+export const queryRows = (conn, table, { filters = [], sort = null, dir = 'desc', limit = 100, offset = 0 } = {}) => {
+  if (!existingTables(conn).includes(table)) return null;
+
+  const columns = columnsOf(conn, table);
+  const names = columns.map(c => c.name);
+  const useFilters = filters.filter(([key, val]) => names.includes(key) && typeof val === 'string');
+  const useSort = names.includes(sort) ? sort : null;
+  const useDir = String(dir).toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+
+  const where = useFilters.length
+    ? 'WHERE ' + useFilters.map(([key]) => `${quoteIdent(key)} = ?`).join(' AND ')
+    : '';
+  const params = useFilters.map(([, val]) => val);
+  const from = `FROM ${quoteIdent(table)} ${where}`;
+  const order = useSort ? `ORDER BY ${quoteIdent(useSort)} ${useDir}` : `ORDER BY rowid ${useDir}`;
+
+  let rows;
+  try {
+    rows = conn.prepare(`SELECT * ${from} ${order} LIMIT ? OFFSET ?`).all(...params, limit, offset);
+  } catch (err) {
+    // WITHOUT ROWID tables have no rowid; fall back to unordered.
+    if (useSort || !/rowid/i.test(err.message)) throw err;
+    rows = conn.prepare(`SELECT * ${from} LIMIT ? OFFSET ?`).all(...params, limit, offset);
+  }
+  const total = conn.prepare(`SELECT COUNT(*) AS n ${from}`).get(...params).n;
+
+  return {
+    table, columns, total, limit, offset, rows,
+    filters: useFilters, sort: useSort, dir: useDir.toLowerCase(),
+  };
+};
+
+// Row counts for every visible table.
+export const tableSummaries = (conn) => existingTables(conn).map(name => ({
+  name,
+  rows: conn.prepare(`SELECT COUNT(*) AS n FROM ${quoteIdent(name)}`).get().n,
+  columns: columnsOf(conn, name),
+}));

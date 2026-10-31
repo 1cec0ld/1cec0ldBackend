@@ -7,7 +7,7 @@ Express API and file host for 1cec0ld.net. Deployed with Dokku on the same VPS a
 |---|---|
 | `/` | Health check / hello |
 | `/downloads`, `/dance` | Public file listings from `storage/` |
-| `/mcdb` | Read-only browser for the Minecraft PokemonServer SQLite DB |
+| `/mcdb`, `/mcdb/:table` | Read-only browser for the Minecraft PokemonServer SQLite DB (server-rendered HTML tables) |
 | `/api/v1/mc/tables`, `/api/v1/mc/tables/:table` | JSON API behind `/mcdb` (allowlisted tables only) |
 | `/api/v1/d/*` | Debug echoes of headers, query, params |
 | `/api/v1/u/login` | Login stub (no real auth yet) |
@@ -47,6 +47,14 @@ One-time setup on the VPS:
 
 ## Minecraft DB browser
 Reads the DB the PokemonServer plugin writes to constantly (WAL mode), so it only ever opens it read-only. Only the tables in `ALLOWED_TABLES` (`util/McDb.js`) are visible; tables with player names/UUIDs (`claude_messages`, `deaths`, `fight_events`, ...) stay hidden. The plugin adds tables and columns without migrations, so the schema is read live on every request.
+
+The pages are rendered on the server with no client JS, so every view is a URL you can bookmark or share:
+`/mcdb/lab_fights?kit=iron&outcome=escaped&_sort=damage&_dir=asc&_page=2&_per=100`
+- `<column>=<value>`: equality filter (click any cell to add one; click a filter chip to remove it)
+- `_sort`, `_dir`: click a column header
+- `_page`, `_per`: paging, with 25/100/500 rows per page
+- Epoch-ms `*_at` columns show as UTC dates, `*_millis` as durations, and floats round to 3 places. Hover a cell for the raw value.
+- ↗ links jump between related tables (`lab_runs` ↔ `lab_fights`, `groups` ↔ `mobs`; `RELATIONS` in `controllers/mc/McDbPages.js`).
 
 ## Database
 No ORM or MySQL client is installed. Dokku still has the old MySQL link env var set on the app; hook into that if a MySQL DB is needed again (see the commented-out `util/MySQL.js`).
