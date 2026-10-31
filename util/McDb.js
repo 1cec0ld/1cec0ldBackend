@@ -1,10 +1,11 @@
+import fs from 'node:fs';
 import Database from 'better-sqlite3';
 
 // Read-only access to the Minecraft PokemonServer plugin's SQLite DB.
 // The plugin owns the file and writes to it constantly (WAL mode). We only read.
 // The host dir /home/ubuntu/mc/data/plugins/PokemonServer is mounted at /mcdata
 // (the whole dir, so the -wal and -shm files sit beside the .db).
-const DB_PATH = process.env.MC_DB_PATH || '/mcdata/pokemonserver.db';
+export const DB_PATH = process.env.MC_DB_PATH || '/mcdata/pokemonserver.db';
 
 // Only these tables may be browsed. Everything else (claude_messages, deaths,
 // fight_events, block_log, ...) holds player names/UUIDs and stays hidden.
@@ -17,6 +18,9 @@ let db = null;
 
 const open = () => {
   if (!db) {
+    if (!fs.existsSync(DB_PATH)) {
+      throw Object.assign(new Error(`Minecraft DB not found at ${DB_PATH}`), { code: 'MCDB_UNAVAILABLE' });
+    }
     db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
     db.pragma('busy_timeout = 5000');
   }

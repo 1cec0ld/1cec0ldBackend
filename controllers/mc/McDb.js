@@ -1,4 +1,4 @@
-import { withDb, existingTables, columnsOf, quoteIdent } from '../../util/McDb.js';
+import { withDb, existingTables, columnsOf, quoteIdent, DB_PATH } from '../../util/McDb.js';
 
 const MAX_LIMIT = 500;
 
@@ -13,9 +13,12 @@ const cleanRow = (row) => {
 };
 
 const fail = (res, err) => {
-  console.error('McDb error:', err);
-  const missing = err?.code === 'SQLITE_CANTOPEN';
-  res.status(missing ? 503 : 500).json({ error: missing ? 'Minecraft DB not available' : 'Query failed' });
+  console.error('McDb error:', err.message);
+  // Unreachable DB: say which dependency and which setting, so it can be fixed.
+  if (err?.code === 'MCDB_UNAVAILABLE' || err?.code === 'SQLITE_CANTOPEN') {
+    return res.status(503).json({ error: 'Minecraft DB unavailable', dependency: 'mcdb', path: DB_PATH, setting: 'MC_DB_PATH' });
+  }
+  res.status(500).json({ error: 'Query failed' });
 };
 
 const McDb = {

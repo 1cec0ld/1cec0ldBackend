@@ -1,8 +1,27 @@
+# Reinstalled inside the image with `npm ci`
 **/node_modules/
+
+# Secrets and local config: must never reach an image layer (the Dockerfile does `COPY . .`)
+.env
+.env.*
+!.env.example
 **/dev_rxight_web_certs/
-**/dist
+*.pem
+*.key
+*.crt
+*.cer
+
+# VCS / editor / logs
 .git
-npm-debug.log
+.gitignore
+.dockerignore
+.claude/
+.vscode/
+.idea/
+.DS_Store
+npm-debug.log*
+*.log
+coverage/
 .coverage
 .coverage.*
-.aws
+**/dist

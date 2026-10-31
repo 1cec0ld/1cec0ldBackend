@@ -1,17 +1,23 @@
-version: '3'
+# Local dev. Same Dockerfile as production; only the build arg and env differ.
+#   docker compose up --build
 services:
   api:
-    image: ereq-server
     build:
       context: .
-      dockerfile: Dockerfile-dev
-    networks:
-      - backend
+      args:
+        NPM_OMIT: ""          # include devDependencies (nodemon)
     ports:
       - "3000:3000"
     volumes:
-      - ./:/usr/src/app
-    env_file: .env
+      - ./:/usr/src/app       # live source for nodemon
+      - /usr/src/app/node_modules   # keep the image's node_modules (Linux build), not the host's
+    environment:
+      NODE_ENV: development
+    env_file:
+      - path: .env
+        required: false
+    networks:
+      - backend
 
 networks:
   backend:

@@ -1,13 +1,12 @@
 {
-  "name": "ereq-server",
+  "name": "1cec0ld-backend",
   "version": "1.0.0",
-  "description": "backend for ereq to communicate with db",
+  "description": "Backend for 1cec0ld.net",
   "type": "module",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon --trace-warnings server.js",
-    "test": "test"
+    "start": "sh ./run.sh",
+    "dev": "docker compose up --build"
   },
   "author": "Jeremy Luchak",
   "license": "ISC",
