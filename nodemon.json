@@ -1,0 +1,4 @@
+{
+  "//": "Restart only for the plain-JS server files. Edits under app/ hot-reload through Vite instead.",
+  "watch": ["server.js", "dependencies.js", "security-headers.js", "scanner-gate.js", "mcdb-path.js"]
+}

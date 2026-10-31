@@ -9,7 +9,7 @@
 // (a typo would otherwise look like a successful waiver).
 
 import fs from 'node:fs';
-import { DB_PATH as MC_DB_PATH } from './util/McDb.js';
+import { MC_DB_PATH } from './mcdb-path.js';
 
 const isDev = () => process.env.NODE_ENV === 'development';
 

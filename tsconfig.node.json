@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["server.js", "dependencies.js", "security-headers.js", "scanner-gate.js", "mcdb-path.js", "vite.config.ts", "react-router.config.ts"],
+  "compilerOptions": {
+    "composite": true,
+    "types": ["node"],
+    "lib": ["ES2023"],
+    "target": "ES2023",
+    "module": "ES2022",
+    "moduleResolution": "bundler"
+  }
+}

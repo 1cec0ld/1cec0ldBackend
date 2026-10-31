@@ -2,3 +2,6 @@ node_modules/
 dev_rxight_web_certs/
 
 .env
+/build/
+/.react-router/
+*.tsbuildinfo

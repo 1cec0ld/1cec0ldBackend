@@ -31,6 +31,7 @@ export const SCANNER_PATH_RE = new RegExp([
   String.raw`^/server-(status|info)([/?]|$)`,
 ].join('|'), 'i');
 
+/** @param {{ method: string, url: string, path: string }} req */
 export function isScannerProbe(req) {
   if (SCANNER_METHODS.has(req.method) || SCANNER_PATH_RE.test(req.url)) return true;
   // Root has no write handler; scanners spray POST/PUT/DELETE at it.

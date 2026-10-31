@@ -1,11 +1,11 @@
 :root {
   --bg: #fbfbfa; --panel: #fff; --fg: #1d1d1b; --muted: #74746f; --line: #e3e2de;
-  --head: #f1f0ec; --stripe: #f7f6f3; --hover: #fff6d6; --accent: #2a62c9; --chip: #e7eefb;
+  --head: #f1f0ec; --stripe: #f7f6f3; --hover: #fff6d6; --accent: #2a62c9; --on-accent: #fff; --chip: #e7eefb;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #131313; --panel: #1a1a1a; --fg: #e6e5e1; --muted: #8d8c87; --line: #2d2d2b;
-    --head: #222220; --stripe: #1e1e1d; --hover: #2f2a1a; --accent: #7aa5ff; --chip: #1f2a40;
+    --head: #222220; --stripe: #1e1e1d; --hover: #2f2a1a; --accent: #7aa5ff; --on-accent: #0d1a33; --chip: #1f2a40;
   }
 }
 * { box-sizing: border-box; }
@@ -14,14 +14,14 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 code { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--head); padding: 1px 4px; border-radius: 3px; }
 
-header { display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; overflow-x: auto; }
-header .home { font-weight: 600; color: var(--fg); white-space: nowrap; }
-header nav { display: flex; gap: 2px; }
-header nav a { padding: 4px 10px; border-radius: 5px; color: var(--fg); white-space: nowrap; }
-header nav a small { margin-left: 6px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-header nav a:hover { background: var(--head); text-decoration: none; }
-header nav a.active { background: var(--accent); color: #fff; }
-header nav a.active small { color: rgba(255,255,255,.8); }
+.mcdb-header { display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; overflow-x: auto; }
+.mcdb-header .home { font-weight: 600; color: var(--fg); white-space: nowrap; }
+.mcdb-header nav { display: flex; gap: 2px; }
+.mcdb-header nav a { padding: 4px 10px; border-radius: 5px; color: var(--fg); white-space: nowrap; }
+.mcdb-header nav a small { margin-left: 6px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.mcdb-header nav a:hover { background: var(--head); text-decoration: none; }
+.mcdb-header nav a.active { background: var(--accent); color: var(--on-accent); }
+.mcdb-header nav a.active small { color: var(--on-accent); opacity: .8; }
 
 main { padding: 12px 16px 32px; }
 h1 { font-size: 18px; margin: 0; }
@@ -41,13 +41,14 @@ form.filter button { cursor: pointer; }
 
 .pager { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; font-size: 13px; }
 .pager .off { color: var(--muted); opacity: .5; }
-.pager .per { margin-left: auto; color: var(--muted); }
+.pager .per { margin-left: auto; color: var(--muted); display: flex; gap: 8px; }
 
 .wrap { overflow: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); max-height: calc(100vh - 170px); }
 table.grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
 .grid th, .grid td { padding: 4px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; white-space: nowrap; }
 .grid th { position: sticky; top: 0; background: var(--head); font-weight: 600; z-index: 1; }
 .grid th a { color: var(--fg); }
+.grid th.num { text-align: right; }
 .grid tbody tr:nth-child(even) td { background: var(--stripe); }
 .grid tbody tr:hover td { background: var(--hover); }
 .grid td a { color: inherit; }
@@ -63,3 +64,13 @@ table.index td { white-space: normal; }
 
 .error { max-width: 640px; padding: 24px 0; }
 .error h1 { margin-bottom: 8px; }
+
+/* ---- site pages ---- */
+.page { max-width: 760px; margin: 0 auto; padding: 48px 16px; }
+.page h1 { font-size: 28px; }
+.lede { color: var(--muted); margin: 4px 0 24px; }
+.cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.cards a { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--fg); }
+.cards a:hover { border-color: var(--accent); text-decoration: none; }
+.cards span { color: var(--muted); font-size: 13px; }
+.page.error pre { overflow: auto; background: var(--head); padding: 12px; border-radius: 6px; font-size: 12px; }
