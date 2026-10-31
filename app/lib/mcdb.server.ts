@@ -74,12 +74,14 @@ const existingTables = (conn: Database.Database): string[] =>
     .map(r => r.name);
 
 // ---- UUID columns stay hidden ----
-// By name (uuid, player_uuid, ...) or by content: a column whose sampled non-empty values
-// are all UUIDs (e.g. a `player` or `created_by` column holding player UUIDs). Content
-// checks are cached briefly, since every page lists every table's columns.
+// By name (uuid, player_uuid, ...) or by content: a column where ANY sampled value is a
+// UUID. "Any", not "all": map_blocks.created_by mixes player UUIDs with 'console'.
+// Content checks are cached briefly, since every page lists every table's columns.
+// serializeRow also redacts UUIDs in whatever is shown, as a backstop for values the
+// sample missed and UUIDs embedded in free text.
 const UUID_NAME_RE = /(^|_)uuid$/i;
 const UUID_VALUE_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
-const UUID_SAMPLE = 25;
+const UUID_SAMPLE = 200;
 const UUID_CACHE_MS = 5 * 60_000;
 const uuidCache = new Map<string, { uuid: boolean; at: number }>();
 
@@ -92,7 +94,7 @@ const isUuidColumn = (conn: Database.Database, table: string, column: string): b
   const sample = conn.prepare(
     `SELECT ${col} AS v FROM ${quoteIdent(table)} WHERE ${col} IS NOT NULL AND ${col} != '' LIMIT ${UUID_SAMPLE}`,
   ).all() as { v: unknown }[];
-  const uuid = sample.length > 0 && sample.every(r => typeof r.v === 'string' && UUID_VALUE_RE.test(r.v));
+  const uuid = sample.some(r => typeof r.v === 'string' && UUID_VALUE_RE.test(r.v));
   uuidCache.set(key, { uuid, at: Date.now() });
   return uuid;
 };
@@ -155,12 +157,15 @@ export const queryRows = (
 };
 
 // BLOBs (e.g. supply_slots.item) and bigints can't go through JSON or loader data as-is.
-// Loader data is serialized, so convert before it leaves the server.
+// Loader data is serialized, so convert before it leaves the server. UUIDs anywhere in a
+// string are redacted (see isUuidColumn).
+const UUID_ANYWHERE_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 export const serializeRow = (row: Row): Record<string, CellValue> => {
   const out: Record<string, CellValue> = {};
   for (const [k, v] of Object.entries(row)) {
     if (Buffer.isBuffer(v)) out[k] = { blob: v.length };
     else if (typeof v === 'bigint') out[k] = v.toString();
+    else if (typeof v === 'string') out[k] = v.replace(UUID_ANYWHERE_RE, '(uuid hidden)');
     else out[k] = v as CellValue;
   }
   return out;

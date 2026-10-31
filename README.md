@@ -58,7 +58,7 @@ One-time setup on the VPS:
 - `dokku ps:restart <app>` after changing mounts.
 
 ## Minecraft DB browser
-Reads the DB the PokemonServer plugin writes to constantly (WAL mode), so it only ever opens it read-only. Every table is visible, but UUID columns are hidden: any column named `uuid`/`*_uuid`, or whose sampled values are all UUIDs (catches player UUIDs in columns like `player` or `created_by`). Hidden columns are never selected, filtered or sorted on. Player names and chat text (`claude_messages`) are visible. The plugin adds tables and columns without migrations, so the schema is read live on every request.
+Reads the DB the PokemonServer plugin writes to constantly (WAL mode), so it only ever opens it read-only. Every table is visible, but UUID columns are hidden: any column named `uuid`/`*_uuid`, or where any sampled value is a UUID (e.g. `map_blocks.created_by`, which mixes player UUIDs with `console`). As a backstop, any UUID left in a shown value (including inside free text) is replaced with `(uuid hidden)`. Hidden columns are never selected, filtered or sorted on. Player names and chat text (`claude_messages`) are visible. The plugin adds tables and columns without migrations, so the schema is read live on every request.
 
 The pages are rendered on the server and hydrate in the browser; navigation is client-side. Every view is a URL you can bookmark or share:
 `/mcdb/lab_fights?kit=iron&outcome=escaped&_sort=damage&_dir=asc&_page=2&_per=100`
