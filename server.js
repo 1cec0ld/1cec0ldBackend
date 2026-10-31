@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs';
 import express from 'express';
-import bodyparser from 'body-parser';
 import cors from 'cors';
 import Routes from './config/Routes.js';
 
@@ -24,7 +23,7 @@ app.use((req, res, next) => {
 });
 
 //initialize preprocessors (middleware)
-app.use(bodyparser.json());
+app.use(express.json());
 app.use(cors());
 
 //initialize routes

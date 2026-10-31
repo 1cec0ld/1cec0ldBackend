@@ -1,4 +1,4 @@
-FROM node:20.9.0-bookworm
+FROM node:24-bookworm
 
 RUN mkdir -p /usr/src/app
 
@@ -8,7 +8,6 @@ COPY package*.json ./
 RUN npm install -g npm@latest
 RUN npm install --omit=dev
 COPY . .
-RUN npx prisma generate
 
 EXPOSE 3000
 

@@ -1,27 +1,11 @@
 # ERequisition Server API Phase 1 (Static Website Hosting)
-## Using ExpressJS, Prisma, Docker, Dokku, MySQL, Hosted on AWS EC2
+## Using ExpressJS, Docker, Dokku, Hosted on AWS EC2
 ---
 ---
 ---
 
-# Database changes
-## Prerequisites
-- A local copy of the code from the git repository
-- The ability to run the code locally
-  - You've gone through MDLabs' local app setup process
-- The ability to deploy the code to the ereq-server
-## Steps
-- Make changes to the database schema in the prisma/schema.prisma file
-- Start the local database if it isn't already running
-  - `sudo /etc/init.d/mysql start`
-- Run `docker-compose up` to start the application
-- Run `docker exec -it ereq-server-api-1 npx prisma migrate dev --name <what_did_you_change>` to generate a migration file in the prisma/migrations folder
-- Check the local database using MySQL Workbench to ensure that migrations applied and no key data was lost
-- Commit and push the changes to the git repository
-- Deploy the changes to the ereq-server
-  - `git push dokku master`
-  - This will run the postdeploy script in the app.json file which will run the `prisma migrate deploy` command on the remote database
-- Check the remote database using MySQL Workbench to ensure that migrations applied and no key data was lost
+# Database
+No ORM is installed right now. Dokku still has the old MySQL link env var set on the app; hook into that if a MySQL DB is needed again (see the commented-out `util/MySQL.js`).
 
 # Deployment
 ## Prerequisites
@@ -150,3 +134,11 @@ If a Load Balancer is not already created for the ereq-server, create one with t
     - `dokku config:set ereq-server NODE_ENV=production`
   - Link the app to the DB
     - `dokku mysql:link ereq-server-db ereq-server`
+# Minecraft DB browser
+Read-only browser for the PokemonServer plugin's SQLite DB (`/mcdb` page, `/api/v1/mc/tables` API).
+Only allowlisted tables are exposed (see `ALLOWED_TABLES` in `util/McDb.js`); tables with player names/UUIDs stay hidden.
+## One-time setup on the VPS
+- Mount the plugin's whole directory (the `-wal`/`-shm` files must sit beside the `.db`). Don't mount it `:ro`; read-only is enforced in code.
+  - `dokku storage:mount <app> /home/ubuntu/mc/data/plugins/PokemonServer:/mcdata`
+  - `dokku ps:restart <app>`
+- Optional: `dokku config:set <app> MC_DB_PATH=/mcdata/pokemonserver.db` (this is the default)

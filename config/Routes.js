@@ -3,9 +3,8 @@ import Query from "../controllers/debug/Query.js"
 import Headers from "../controllers/debug/Headers.js"
 import Sql from "../controllers/debug/Sql.js"
 import Subparam from "../controllers/debug/Subparam.js"
-import Prisma from "../controllers/debug/Prisma.js"
-import Populate from "../controllers/debug/Populate.js"
 import User from "../controllers/user/User.js"
+import McDb from "../controllers/mc/McDb.js"
 import serveIndex from 'serve-index';
 import express from 'express';
 
@@ -18,19 +17,23 @@ const Routes = {
     
 
 
+    // Minecraft DB browser page
+    expressApp.use('/mcdb', express.static('/usr/src/app/public/mcdb'));
+
     //define routes
     ///root [mostly for AWS Health checks]
     expressApp.get('/', Root);
     ///d/ebug routes for reviewing variable values
     expressApp.v1('get', '/d/headers', Headers)
-    expressApp.v1('get', '/d/populate', Populate),
-    expressApp.v1('get', '/d/prisma', Prisma)
     expressApp.v1('get', '/d/query', Query)
     expressApp.v1('get', '/d/sql', Sql)
     expressApp.v1('get', '/d/subparam/:q', Subparam)
     ///u/ser lookups
     expressApp.v1('get',  '/u/login', User.blank)
     expressApp.v1('post', '/u/login', User.login)
+    ///mc/ Minecraft PokemonServer DB (read-only, allowlisted tables)
+    expressApp.v1('get', '/mc/tables', McDb.tables)
+    expressApp.v1('get', '/mc/tables/:table', McDb.rows)
     ///p/ublic downloads
     //expressApp.v1('get',  '/p/downloads', Downloads.all)
   }

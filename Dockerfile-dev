@@ -1,4 +1,4 @@
-FROM node:20.9.0-bookworm
+FROM node:24-bookworm
 
 RUN mkdir -p /usr/src/app
 
