@@ -60,7 +60,7 @@ export function loader({ request, params }: Route.LoaderArgs) {
     if (isUnavailable(err)) throw data(UNAVAILABLE, { status: 503 });
     throw data({ error: 'Query failed' }, { status: 500 });
   }
-  if (!result) throw data(`Unknown table "${params.table}". Only allowlisted tables can be browsed.`, { status: 404 });
+  if (!result) throw data(`Unknown table "${params.table}".`, { status: 404 });
 
   return {
     table: result.table,

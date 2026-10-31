@@ -7,6 +7,8 @@ import express from 'express';
 import { nonceContext } from '../app/context';
 
 export const app = express();
+// server.js disables this on the outer app; this inner app would add it back.
+app.disable('x-powered-by');
 
 app.use(
   createRequestHandler({

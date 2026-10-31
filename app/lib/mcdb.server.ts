@@ -9,12 +9,7 @@ import type { CellValue } from './format';
 
 export const DB_PATH: string = MC_DB_PATH;
 
-// Only these tables may be browsed. Everything else (claude_messages, deaths,
-// fight_events, block_log, ...) holds player names/UUIDs and stays hidden.
-export const ALLOWED_TABLES = [
-  'lab_runs', 'lab_fights', 'price_seeds', 'price_ops',
-  'towns', 'groups', 'mobs', 'supply_slots',
-];
+// Every table is browsable, but UUID columns are never shown or queried (see isUuidColumn).
 
 export type Column = { name: string; type: string; pk: number };
 export type Row = Record<string, unknown>;
@@ -72,18 +67,45 @@ export const withDb = <T>(fn: (conn: Database.Database) => T): T => {
 const quoteIdent = (name: string) => `"${String(name).replace(/"/g, '""')}"`;
 
 // The plugin adds tables and columns without migrations, so read the schema live every time.
+// sqlite_* are SQLite's own bookkeeping tables.
 const existingTables = (conn: Database.Database): string[] =>
-  (conn.prepare(`SELECT name FROM sqlite_master WHERE type = 'table'`).all() as { name: string }[])
-    .map(r => r.name)
-    .filter(name => ALLOWED_TABLES.includes(name));
+  (conn.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' ORDER BY name`)
+    .all() as { name: string }[])
+    .map(r => r.name);
 
+// ---- UUID columns stay hidden ----
+// By name (uuid, player_uuid, ...) or by content: a column whose sampled non-empty values
+// are all UUIDs (e.g. a `player` or `created_by` column holding player UUIDs). Content
+// checks are cached briefly, since every page lists every table's columns.
+const UUID_NAME_RE = /(^|_)uuid$/i;
+const UUID_VALUE_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+const UUID_SAMPLE = 25;
+const UUID_CACHE_MS = 5 * 60_000;
+const uuidCache = new Map<string, { uuid: boolean; at: number }>();
+
+const isUuidColumn = (conn: Database.Database, table: string, column: string): boolean => {
+  if (UUID_NAME_RE.test(column)) return true;
+  const key = `${table}\u0000${column}`;
+  const hit = uuidCache.get(key);
+  if (hit && Date.now() - hit.at < UUID_CACHE_MS) return hit.uuid;
+  const col = quoteIdent(column);
+  const sample = conn.prepare(
+    `SELECT ${col} AS v FROM ${quoteIdent(table)} WHERE ${col} IS NOT NULL AND ${col} != '' LIMIT ${UUID_SAMPLE}`,
+  ).all() as { v: unknown }[];
+  const uuid = sample.length > 0 && sample.every(r => typeof r.v === 'string' && UUID_VALUE_RE.test(r.v));
+  uuidCache.set(key, { uuid, at: Date.now() });
+  return uuid;
+};
+
+// Visible columns only. Everything downstream (SELECT list, filters, sort) uses this.
 const columnsOf = (conn: Database.Database, table: string): Column[] =>
-  conn.prepare(`SELECT name, type, pk FROM pragma_table_info(?)`).all(table) as Column[];
+  (conn.prepare(`SELECT name, type, pk FROM pragma_table_info(?)`).all(table) as Column[])
+    .filter(c => !isUuidColumn(conn, table, c.name));
 
 const count = (conn: Database.Database, sql: string, params: unknown[] = []): number =>
   (conn.prepare(sql).get(...params) as { n: number }).n;
 
-// Row counts and columns for every visible table.
+// Row counts and visible columns for every table.
 export const tableSummaries = (conn: Database.Database): TableSummary[] =>
   existingTables(conn).map(name => ({
     name,
@@ -91,7 +113,7 @@ export const tableSummaries = (conn: Database.Database): TableSummary[] =>
     columns: columnsOf(conn, name),
   }));
 
-// One page of rows from an allowlisted table. Unknown filter/sort columns are ignored.
+// One page of rows (visible columns only). Unknown filter/sort columns are ignored.
 // sort null = newest first by rowid. Returns null for a table that isn't visible.
 export const queryRows = (
   conn: Database.Database,
@@ -112,15 +134,17 @@ export const queryRows = (
     : '';
   const params = useFilters.map(([, val]) => val);
   const from = `FROM ${quoteIdent(table)} ${where}`;
+  // Name the visible columns rather than SELECT *, so hidden UUID values never leave SQLite.
+  const select = `SELECT ${columns.length ? names.map(quoteIdent).join(', ') : 'NULL AS _'}`;
   const order = useSort ? `ORDER BY ${quoteIdent(useSort)} ${useDir}` : `ORDER BY rowid ${useDir}`;
 
   let rows: Row[];
   try {
-    rows = conn.prepare(`SELECT * ${from} ${order} LIMIT ? OFFSET ?`).all(...params, limit, offset) as Row[];
+    rows = conn.prepare(`${select} ${from} ${order} LIMIT ? OFFSET ?`).all(...params, limit, offset) as Row[];
   } catch (err) {
     // WITHOUT ROWID tables have no rowid; fall back to unordered.
     if (useSort || !/rowid/i.test((err as Error).message)) throw err;
-    rows = conn.prepare(`SELECT * ${from} LIMIT ? OFFSET ?`).all(...params, limit, offset) as Row[];
+    rows = conn.prepare(`${select} ${from} LIMIT ? OFFSET ?`).all(...params, limit, offset) as Row[];
   }
 
   return {

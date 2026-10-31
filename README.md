@@ -16,7 +16,7 @@ Website, JSON API and file host for 1cec0ld.net: React Router 8 (framework mode,
 | `/` | Home page |
 | `/downloads`, `/dance` | Public file listings from `storage/` |
 | `/mcdb`, `/mcdb/:table` | Read-only browser for the Minecraft PokemonServer SQLite DB (React pages) |
-| `/api/v1/mc/tables`, `/api/v1/mc/tables/:table` | JSON API for the same data (allowlisted tables only) |
+| `/api/v1/mc/tables`, `/api/v1/mc/tables/:table` | JSON API for the same data (UUID columns hidden) |
 | `/api/v1/d/*` | Debug echoes of headers, query, params |
 | `/api/v1/u/login` | Login stub (no real auth yet) |
 
@@ -58,7 +58,7 @@ One-time setup on the VPS:
 - `dokku ps:restart <app>` after changing mounts.
 
 ## Minecraft DB browser
-Reads the DB the PokemonServer plugin writes to constantly (WAL mode), so it only ever opens it read-only. Only the tables in `ALLOWED_TABLES` (`app/lib/mcdb.server.ts`) are visible; tables with player names/UUIDs (`claude_messages`, `deaths`, `fight_events`, ...) stay hidden. The plugin adds tables and columns without migrations, so the schema is read live on every request.
+Reads the DB the PokemonServer plugin writes to constantly (WAL mode), so it only ever opens it read-only. Every table is visible, but UUID columns are hidden: any column named `uuid`/`*_uuid`, or whose sampled values are all UUIDs (catches player UUIDs in columns like `player` or `created_by`). Hidden columns are never selected, filtered or sorted on. Player names and chat text (`claude_messages`) are visible. The plugin adds tables and columns without migrations, so the schema is read live on every request.
 
 The pages are rendered on the server and hydrate in the browser; navigation is client-side. Every view is a URL you can bookmark or share:
 `/mcdb/lab_fights?kit=iron&outcome=escaped&_sort=damage&_dir=asc&_page=2&_per=100`
